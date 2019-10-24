@@ -4,7 +4,9 @@ _label = {}
 # with fileinput.input(files=('in.txt')) as f:
 
 # mapLabel to _label["Key"] = "Value"
-def mapLabel():
+
+
+def map_label():
     inFile = open(inFilePath, 'r')
     lineCount = 0
     for line in inFile:
@@ -15,6 +17,30 @@ def mapLabel():
     inFile.close()
 
 
+def binary_to_decimal(str_val):     # convert binary string to decimal
+    """convert binary string to decimal"""
+    result = 0
+    base = 1
+    binary_len = len(str_val)
+    for i in range(binary_len - 1, -1, -1):
+        if(str_val[i] == "1"):
+            result += base
+        base *= 2
+    return result                   # return int
+
+
+def decimal_to_binary(val, bits):    # convert decimal int to binary string
+    """convert decimal int to binary string"""
+    result = ""
+    for i in range(bits-1, -1, -1):
+        j = val >> i
+        if(j & 1):
+            result += "1"
+        else:
+            result += "0"
+    return result                   # return string
+
+
 def twos_comp(val, bits):
     """compute the 2's complement of int"""
     val = val - (1 << bits)         # compute negative value
@@ -22,32 +48,37 @@ def twos_comp(val, bits):
 
 
 def inFileParse():
-    mapLabel()
+    map_label()
     bit31_25 = '0000000'            # Set Unused Bits to 0
     pc = 0                          # Initial PC = 0
     inFile = open(inFilePath, 'r')  # Open file for Read ('r')
     for line in inFile:             # Read line
-        lineSplit = line.split("    ")      # Split field to Array lineSplit[idx]
+        # Split field to Array lineSplit[idx]
+        lineSplit = line.split("    ")
         if(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq'):
             if(lineSplit[1] == 'beq'):
                 opcode = '100'
-                if lineSplit[2].isnumeric():                            # Check if field is Number
-                    field0 = "{0:03b}".format(int(lineSplit[2]))        # Format Number in field0 to Binary length 3 bits ({0:03b})
+                # Check if field is Number
+                if lineSplit[2].isnumeric():
+                    # Format Number in field0 to Binary length 3 bits ({0:03b})
+                    field0 = decimal_to_binary(int(lineSplit[2]), 3)
                 else:
-                    field0 = "{0:03b}".format(int(_label[lineSplit[2]]))
+                    field0 = decimal_to_binary(int(_label[lineSplit[2]]), 3)
                 if lineSplit[3].isnumeric():
-                    field1 = "{0:03b}".format(int(lineSplit[3]))
+                    field1 = decimal_to_binary(int(lineSplit[3]), 3)
                 else:
-                    field1 = "{0:03b}".format(int(_label[lineSplit[3]]))
+                    field1 = decimal_to_binary(int(_label[lineSplit[3]]), 3)
+
                 if lineSplit[4].isnumeric():
-                    field2 = "{0:016b}".format(int(lineSplit[4]))
+                    field2 = decimal_to_binary(int(lineSplit[4]), 16)
                 else:
                     if(int(_label[lineSplit[4]]) >= pc):
-                        field2 = "{0:03b}".format(int(_label[lineSplit[4]]))
-                    else:                                                # If branch backward use 2's complement 
+                        field2 = decimal_to_binary(
+                            int(_label[lineSplit[4]]), 16)
+                    else:                                                # If branch backward use 2's complement
                         field2 = int(
                             twos_comp(int(_label[lineSplit[4]] + 1), 16))
-                        field2 = "{0:03b}".format(field2)
+                        field2 = decimal_to_binary(field2, 16)
 
             elif(lineSplit[1] == 'lw' or lineSplit[1] == 'sw'):
                 if(lineSplit[1] == 'lw'):
@@ -56,20 +87,21 @@ def inFileParse():
                     opcode = '011'
 
                 if lineSplit[2].isnumeric():
-                    field0 = "{0:03b}".format(int(lineSplit[2]))
+                    field0 = decimal_to_binary(int(lineSplit[2]),3)
                 else:
-                    field0 = "{0:03b}".format(int(_label[lineSplit[2]]))
+                    field0 = decimal_to_binary(int(_label[lineSplit[2]]),3)
                 if lineSplit[3].isnumeric():
-                    field1 = "{0:03b}".format(int(lineSplit[3]))
+                    field1 = decimal_to_binary(int(lineSplit[3]),3)
                 else:
-                    field1 = "{0:03b}".format(int(_label[lineSplit[3]]))
+                    field1 = decimal_to_binary(int(_label[lineSplit[3]]),3)
                 if lineSplit[4].isnumeric():
-                    field2 = "{0:016b}".format(int(lineSplit[4]))
+                    field2 = decimal_to_binary(int(lineSplit[4]),16)
                 else:
-                    field2 = "{0:03b}".format(int(_label[lineSplit[4]]))
+                    field2 = decimal_to_binary(int(_label[lineSplit[4]]),16)
 
-            machineCode = int(bit31_25 + opcode + field0 + field1 + field2, 2)  # concat machineCode and cast to int
-        print(machineCode)
+            # concat machineCode and cast to int -> int("numberString",base)
+            machineCode = binary_to_decimal(bit31_25 + opcode + field0 + field1 + field2)
+            print(machineCode)
         pc += 1
 
 
