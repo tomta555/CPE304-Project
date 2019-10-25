@@ -1,6 +1,6 @@
 import fileinput
 import sys
-inFilePath = 'in.txt'
+inFilePath = ''
 _label = {}
 # with fileinput.input(files=('in.txt')) as f:
 
@@ -47,7 +47,8 @@ def twos_comp(val, bits):
     val = val - (1 << bits)         # compute negative value
     return -val                     # return positive value
 
-def writeData(data): # write data to output.txt
+
+def writeData(data):  # write data to output.txt
     f = open("output.txt", "a")
     f.write(data + "\n")
     f.close()
@@ -56,12 +57,15 @@ def writeData(data): # write data to output.txt
 def inFileParse():
     map_label()
     bit31_25 = '0000000'            # Set Unused Bits to 0
+    bit21_0 = '0000000000000000000000'
+    bit15_3 = '0000000000000'
+    bit15_0 = '0000000000000000'
     pc = 0                          # Initial PC = 0
     inFile = open(inFilePath, 'r')  # Open file for Read ('r')
     for line in inFile:             # Read line
         # Split field to Array lineSplit[idx]
         lineSplit = line.split("    ")
-        if(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq'):
+        if(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq' or lineSplit[1] == 'add' or lineSplit[1] == 'nand'):
             if(lineSplit[1] == 'beq'):
                 opcode = '100'
                 # Check if field is Number
@@ -93,23 +97,63 @@ def inFileParse():
                     opcode = '011'
 
                 if lineSplit[2].isnumeric():
-                    field0 = decimal_to_binary(int(lineSplit[2]),3)
+                    field0 = decimal_to_binary(int(lineSplit[2]), 3)
                 else:
-                    field0 = decimal_to_binary(int(_label[lineSplit[2]]),3)
+                    field0 = decimal_to_binary(int(_label[lineSplit[2]]), 3)
                 if lineSplit[3].isnumeric():
-                    field1 = decimal_to_binary(int(lineSplit[3]),3)
+                    field1 = decimal_to_binary(int(lineSplit[3]), 3)
                 else:
-                    field1 = decimal_to_binary(int(_label[lineSplit[3]]),3)
+                    field1 = decimal_to_binary(int(_label[lineSplit[3]]), 3)
                 if lineSplit[4].isnumeric():
-                    field2 = decimal_to_binary(int(lineSplit[4]),16)
+                    field2 = decimal_to_binary(int(lineSplit[4]), 16)
                 else:
-                    field2 = decimal_to_binary(int(_label[lineSplit[4]]),16)
+                    field2 = decimal_to_binary(int(_label[lineSplit[4]]), 16)
 
-            # concat machineCode and cast to int -> int("numberString",base)
-            machineCode = binary_to_decimal(bit31_25 + opcode + field0 + field1 + field2)
-            print(machineCode) 
-            writeData(str(machineCode)) # write machine code to output.txt
+            elif(lineSplit[1] == 'add'):
+                opcode = '000'
+                if lineSplit[2].isnumeric():
+                    field0 = decimal_to_binary(int(lineSplit[2]), 3)
+                else:
+                    field0 = decimal_to_binary(int(_label[lineSplit[2]]), 3)
+                if lineSplit[3].isnumeric():
+                    field1 = decimal_to_binary(int(lineSplit[3]), 3)
+                else:
+                    field1 = decimal_to_binary(int(_label[lineSplit[3]]), 3)
+                if lineSplit[4].isnumeric():
+                    field2 = decimal_to_binary(int(lineSplit[4]), 3)
+                else:
+                    field2 = decimal_to_binary(int(_label[lineSplit[4]]), 3)
+
+            elif(lineSplit[1] == 'nand'):
+                opcode = '001'
+                if lineSplit[2].isnumeric():
+                    field0 = decimal_to_binary(int(lineSplit[2]), 3)
+                else:
+                    field0 = decimal_to_binary(int(_label[lineSplit[2]]), 3)
+                if lineSplit[3].isnumeric():
+                    field1 = decimal_to_binary(int(lineSplit[3]), 3)
+                else:
+                    field1 = decimal_to_binary(int(_label[lineSplit[3]]), 3)
+                if lineSplit[4].isnumeric():
+                    field2 = decimal_to_binary(int(lineSplit[4]), 3)
+                else:
+                    field2 = decimal_to_binary(int(_label[lineSplit[4]]), 3)
+
+            if(lineSplit[1] == 'add' or lineSplit[1] == 'nand'):
+                machineCode = binary_to_decimal(
+                    bit31_25 + opcode + field0 + field1 + bit15_3 + field2)
+                print(machineCode)
+
+            elif(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq'):
+                machineCode = binary_to_decimal(
+                    bit31_25 + opcode + field0 + field1 + field2)
+                print(machineCode)
+
+            writeData(str(machineCode))  # write machine code to output.txt
         pc += 1
+    inFile.close()
 
-inFilePath = sys.argv[1] # receive machine argument from command line ex. python ASMtoMachine.py in.txt
+
+# receive machine argument from command line ex. python ASMtoMachine.py in.txt
+inFilePath = sys.argv[1]
 inFileParse()
