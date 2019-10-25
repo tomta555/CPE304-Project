@@ -1,4 +1,5 @@
 import fileinput
+import sys
 inFilePath = 'in.txt'
 _label = {}
 # with fileinput.input(files=('in.txt')) as f:
@@ -45,6 +46,11 @@ def twos_comp(val, bits):
     """compute the 2's complement of int"""
     val = val - (1 << bits)         # compute negative value
     return -val                     # return positive value
+
+def writeData(data): # write data to output.txt
+    f = open("output.txt", "a")
+    f.write(data + "\n")
+    f.close()
 
 
 def inFileParse():
@@ -101,8 +107,9 @@ def inFileParse():
 
             # concat machineCode and cast to int -> int("numberString",base)
             machineCode = binary_to_decimal(bit31_25 + opcode + field0 + field1 + field2)
-            print(machineCode)
+            print(machineCode) 
+            writeData(str(machineCode)) # write machine code to output.txt
         pc += 1
 
-
+inFilePath = sys.argv[1] # receive machine argument from command line ex. python ASMtoMachine.py in.txt
 inFileParse()
