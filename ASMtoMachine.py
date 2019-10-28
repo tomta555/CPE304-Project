@@ -84,10 +84,10 @@ def inFileParse():
                 else:
                     if(int(_label[lineSplit[4]]) >= pc):
                         field2 = decimal_to_binary(
-                            int(_label[lineSplit[4]]), 16)
+                            int(_label[lineSplit[4]] - pc), 16)
                     else:                                                # If branch backward use 2's complement
                         field2 = int(
-                            twos_comp(int(_label[lineSplit[4]] + 1), 16))
+                            twos_comp(int(pc - _label[lineSplit[4]] + 1), 16))
                         field2 = decimal_to_binary(field2, 16)
 
             elif(lineSplit[1] == 'lw' or lineSplit[1] == 'sw'):
