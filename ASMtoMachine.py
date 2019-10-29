@@ -89,6 +89,7 @@ def writeData(data):  # write data to output.txt
 
 
 def inFileParse():
+    
     map_label()
     bit31_25 = '0000000'            # Set Unused Bits to 0
     bit21_0 = '0000000000000000000000'
@@ -96,10 +97,10 @@ def inFileParse():
     bit15_0 = '0000000000000000'
     pc = 0                          # Initial PC = 0
     inFile = open(inFilePath, 'r')  # Open file for Read ('r')
+    
     for line in inFile:             # Read line
         # Split field to Array lineSplit[idx]
         lineSplit = line.split("    ")
-        # print(lineSplit)
         if(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq' or lineSplit[1] == 'add' or lineSplit[1] == 'nand' or lineSplit[1] == 'jalr' or lineSplit[1] == 'halt' or lineSplit[1] == 'noop' or lineSplit[1] == '.fill'):
             if(lineSplit[1] == 'beq'):
                 opcode = '100'
@@ -221,25 +222,25 @@ def inFileParse():
             print("Error : Undifined instruction")
             exit(1)
 
-            if(lineSplit[1] == 'add' or lineSplit[1] == 'nand'):
-                machineCode = binary_to_decimal(
-                    bit31_25 + opcode + field0 + field1 + bit15_3 + field2)
-                print(machineCode)
-            elif(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq'):
-                machineCode = binary_to_decimal(
-                    bit31_25 + opcode + field0 + field1 + field2)
-                print(machineCode)
-            elif(lineSplit[1] == 'jalr'):
-                machineCode = binary_to_decimal(
-                    bit31_25 + opcode + field0 + field1 + bit15_0)
-                print(machineCode)
-            elif(lineSplit[1] == 'halt' or lineSplit[1] == 'noop'):
-                machineCode = binary_to_decimal(bit31_25 + opcode + bit21_0)
-                print(machineCode)
-            elif(lineSplit[1] == '.fill'):
-                machineCode = int(opcode)
-                print(machineCode)
-            writeData(str(machineCode))  # write machine code to output.txt
+        if(lineSplit[1] == 'add' or lineSplit[1] == 'nand'):
+            machineCode = binary_to_decimal(
+                bit31_25 + opcode + field0 + field1 + bit15_3 + field2)
+            print(machineCode)
+        elif(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq'):
+            machineCode = binary_to_decimal(
+                bit31_25 + opcode + field0 + field1 + field2)
+            print(machineCode)
+        elif(lineSplit[1] == 'jalr'):
+            machineCode = binary_to_decimal(
+                bit31_25 + opcode + field0 + field1 + bit15_0)
+            print(machineCode)
+        elif(lineSplit[1] == 'halt' or lineSplit[1] == 'noop'):
+            machineCode = binary_to_decimal(bit31_25 + opcode + bit21_0)
+            print(machineCode)
+        elif(lineSplit[1] == '.fill'):
+            machineCode = int(opcode)
+            print(machineCode)
+        writeData(str(machineCode))  # write machine code to output.txt
         pc += 1
     inFile.close()
 
@@ -247,7 +248,7 @@ def inFileParse():
 try:
     # receive machine argument from command line ex. python ASMtoMachine.py in.txt
     inFilePath = sys.argv[1]
-except:
+except :
     print("please insert input file ex. python ASMtoMachine.py in.txt")
     exit(1)
 inFileParse()
