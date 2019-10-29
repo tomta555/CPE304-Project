@@ -225,7 +225,10 @@ def inFileParse():
             writeData(str(machineCode))  # write machine code to output.txt
         pc += 1
     inFile.close()
-
-# receive machine argument from command line ex. python ASMtoMachine.py in.txt
-inFilePath = sys.argv[1]
+try:
+    # receive machine argument from command line ex. python ASMtoMachine.py in.txt
+    inFilePath = sys.argv[1]
+except:
+    print("please insert input file ex. python ASMtoMachine.py in.txt")
+    exit(1)
 inFileParse()
