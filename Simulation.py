@@ -76,7 +76,7 @@ def print_state():
     for i in range(0,_lastline,1):
         print("\t\t" + "mem[ " + str(i) + " ] " + _state["mem[ " + str(i) + " ]"])
     print("\tregisters:")
-    for i in range(0,7,1):
+    for i in range(0,8,1):
         print("\t\t" + "reg[ " + str(i) + " ] " + str(_state["reg[ " + str(i) + " ]"]))
     print("end state\n\n")
 
@@ -84,61 +84,74 @@ def simulation():
     """Simulation each instruction behavior"""
     # เรียกใช้ pc ด้วย _state["pc"]
     # เรียกใช้ memory ด้วย _state["mem[ " + index + " ]"]  -> index ตั้งแต่ 0 ถึง _lastline
-    # เรียกใช้ register ด้วย _state["reg[ " + index + " ]"] -> index ตั้งแต่ 0 ถึง 8
+    # เรียกใช้ register ด้วย _state["reg[ " + index + " ]"] -> index ตั้งแต่ 0 ถึง 7
     
     inst_count = 0
     while (_state["pc"] != _halt_pc):
         inst_count += 1
         if(_pc_oppcode["pc"+str(_state["pc"])] == "000"): # add
             print("add")
-            # do your code here
             print_state()
+            # do your code here 
+
             _state["pc"] += 1
         elif(_pc_oppcode["pc"+str(_state["pc"])] == "001"): # nand
             print("nand")
-            # do your code here
             print_state()
+            # do your code here
+            
             _state["pc"] += 1
         elif(_pc_oppcode["pc"+str(_state["pc"])] == "010"): # lw
             print("lw")
-            # do your code here
             print_state()
+            # do your code here
+           
             _state["pc"] += 1
         elif(_pc_oppcode["pc"+str(_state["pc"])] == "011"): # sw
             print("sw")
-            # do your code here
             print_state()
+            # do your code here
+
             _state["pc"] += 1
         elif(_pc_oppcode["pc"+str(_state["pc"])] == "100"): # beq
             print("beq")
             branch = False
             offset = twos_comp(binary_to_decimal(get_bits(int(_state["mem[ "+ str(_state["pc"]) +" ]"]),16,32)),16)
-            # do your code here
             print_state()
+            # do your code here
+            
             if(branch):
                 _state["pc"] += 1 + offset
             else:
                 _state["pc"] += 1
         elif(_pc_oppcode["pc"+str(_state["pc"])] == "101"): # jalr
             print("jalr")
-            # do your code here
             print_state()
+            # do your code here
+            
             # _state["pc"] = regA
             _state["pc"] += 1 # dummy
         elif(_pc_oppcode["pc"+str(_state["pc"])] == "110"): # halt
             print("halt")
-            # do your code here
             print_state()
+            # do your code here
+            
             print("machine halted\ntotal of " + str(inst_count) + " instructions executed\nfinal state of machine:\n")
             _state["pc"] += 1
             print_state()
         elif(_pc_oppcode["pc"+str(_state["pc"])] == "111"): # noop
             print("noop")
-            # do your code here
             print_state()
+            # do your code here
+            
             _state["pc"] += 1 # dummy
 
 
-inFilePath = sys.argv[1]
+try:
+    # receive machine argument from command line ex. python Simulation.py machineCode.txt
+    inFilePath = sys.argv[1]
+except :
+    print("please insert input file ex. python Simulation.py machineCode.txt")
+    exit(1)
 init_MEM_REG()
 simulation()
