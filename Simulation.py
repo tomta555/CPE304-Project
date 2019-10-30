@@ -37,11 +37,9 @@ def twos_comp(val, bits):
     return val                          # return positive value
 
 
-def get_bits(decimal,left,right):
-    """return select bits from decimal ex. get_bits("100101",0,3) will return 100"""
-    binary = decimal_to_binary(decimal,32)
+def get_bits(binary,left,right):
+    """return select bits [left:right] from binary ex. get_bits("100101",0,3) will return 100"""
     return binary[left:right]
-
 
 def init_MEM_REG():
     """create initial value in memory and register"""
@@ -58,7 +56,7 @@ def init_MEM_REG():
     for line in inFile:
         _state["mem[ " + str(lineCount) + " ]"] = line.replace('\n', '')
         if not halt_passed:
-            _pc_oppcode["pc"+ str(lineCount)] = get_bits(int(line.replace('\n', '')),7,10)
+            _pc_oppcode["pc"+ str(lineCount)] = get_bits(decimal_to_binary(int(line.replace('\n', '')),32),7,10)
         if(line.replace('\n', '') == "25165824"):
             global _halt_pc
             _halt_pc = lineCount + 1  
@@ -116,10 +114,12 @@ def simulation():
         elif(_pc_oppcode["pc"+str(_state["pc"])] == "100"): # beq
             print("beq")
             branch = False
-            offset = twos_comp(binary_to_decimal(get_bits(int(_state["mem[ "+ str(_state["pc"]) +" ]"]),16,32)),16)
+            offset = twos_comp(
+                binary_to_decimal(get_bits(
+                    decimal_to_binary(int(_state["mem[ "+ str(_state["pc"]) +" ]"]),32),16,32)),16)
             print_state()
             # do your code here
-            
+            print(offset)
             if(branch):
                 _state["pc"] += 1 + offset
             else:
