@@ -2,9 +2,11 @@ import fileinput
 import sys
 inFilePath = ''
 _state = {}
-_pc_oppcode = {}
-_halt_pc = 0
-_lastline = 0
+_machine_code = {}
+opcode = {}
+halt_pc = 0
+num_Memory = 0
+
 
 def binary_to_decimal(str_val):     # convert binary string to decimal
     """convert binary string to decimal"""
@@ -30,6 +32,23 @@ def decimal_to_binary(val, bits):    # convert decimal int to binary string
     return result                   # return string
 
 
+def nand(regA, regB):
+    """compute nand from value in regA and regB : input is decimal"""
+    max_len = 0
+    len_A = len(format(regA, 'b'))
+    len_B = len(format(regB, 'b'))
+
+    if(len_A >= len_B):
+        max_len = len_A
+    else:
+        max_len = len_B
+    max_value = 0
+    for i in range(max_len - 1, -1, -1):
+        max_value += 1 << i
+
+    return max_value - (regA & regB)
+
+
 def twos_comp(val, bits):
     """compute the 2's complement of int"""
     if (val & (1 << (bits - 1))) != 0:  # if sign bit is set
@@ -37,16 +56,34 @@ def twos_comp(val, bits):
     return val                          # return positive value
 
 
-def get_bits(binary,left,right):
+def get_offset(pc):
+    """return offset"""
+    offset = twos_comp(binary_to_decimal(
+        get_bits(decimal_to_binary(_state["mem[ " + str(pc) + " ]"], 32), 16, 32)), 16)
+    return offset
+
+
+def get_reg_number(pc, AorBorDest):
+    """return register number of regA or regB or destReg ex. get_reg_number(_state["pc"],"Dest")"""
+    if AorBorDest == "A":
+        return binary_to_decimal(get_bits(decimal_to_binary(_state["mem[ " + str(pc) + " ]"], 32), 10, 13))
+    elif AorBorDest == "B":
+        return binary_to_decimal(get_bits(decimal_to_binary(_state["mem[ " + str(pc) + " ]"], 32), 13, 16))
+    elif AorBorDest == "Dest":
+        return binary_to_decimal(get_bits(decimal_to_binary(_state["mem[ " + str(pc) + " ]"], 32), 29, 32))
+
+
+def get_bits(binary, left, right):
     """return select bits [left:right] from binary ex. get_bits("100101",0,3) will return 100"""
     return binary[left:right]
+
 
 def init_MEM_REG():
     """create initial value in memory and register"""
     inFile = open(inFilePath, 'r')
     i = 0
     lineCount = 0
-    halt_passed = False 
+    halt_passed = False
     _state["pc"] = 0
 
     while (i < 8):
@@ -54,103 +91,115 @@ def init_MEM_REG():
         i += 1
 
     for line in inFile:
-        _state["mem[ " + str(lineCount) + " ]"] = line.replace('\n', '')
+        _state["mem[ " + str(lineCount) + " ]"] = int(line.replace('\n', ''))
+        _machine_code["line" + str(lineCount)] = int(line.replace('\n', ''))
         if not halt_passed:
-            _pc_oppcode["pc"+ str(lineCount)] = get_bits(decimal_to_binary(int(line.replace('\n', '')),32),7,10)
+            opcode["pc" + str(lineCount)] = get_bits(
+                decimal_to_binary(int(line.replace('\n', '')), 32), 7, 10)
         if(line.replace('\n', '') == "25165824"):
-            global _halt_pc
-            _halt_pc = lineCount + 1  
+            global halt_pc
+            halt_pc = lineCount + 1
             halt_passed = True
         lineCount += 1
-    global _lastline
-    _lastline = lineCount
-        
+    global num_Memory
+    num_Memory = lineCount
+
     inFile.close()
 
 
 def print_state():
     """Print state and value in each memory and register"""
     print("@@@\nstate:\n\tpc " + str(_state["pc"])+"\n\tmemory:")
-    for i in range(0,_lastline,1):
-        print("\t\t" + "mem[ " + str(i) + " ] " + _state["mem[ " + str(i) + " ]"])
+    for i in range(0, num_Memory, 1):
+        print("\t\t" + "mem[ " + str(i) + " ] " +
+              str(_state["mem[ " + str(i) + " ]"]))
     print("\tregisters:")
-    for i in range(0,8,1):
-        print("\t\t" + "reg[ " + str(i) + " ] " + str(_state["reg[ " + str(i) + " ]"]))
+    for i in range(0, 8, 1):
+        print("\t\t" + "reg[ " + str(i) + " ] " +
+              str(_state["reg[ " + str(i) + " ]"]))
     print("end state\n\n")
+
 
 def simulation():
     """Simulation each instruction behavior"""
     # เรียกใช้ pc ด้วย _state["pc"]
-    # เรียกใช้ memory ด้วย _state["mem[ " + index + " ]"]  -> index ตั้งแต่ 0 ถึง _lastline
+    # เรียกใช้ memory ด้วย _state["mem[ " + index + " ]"]  -> index ตั้งแต่ 0 ถึง num_Memory
     # เรียกใช้ register ด้วย _state["reg[ " + index + " ]"] -> index ตั้งแต่ 0 ถึง 7
-    
+
     inst_count = 0
-    while (_state["pc"] != _halt_pc):
+    while (_state["pc"] != halt_pc):
         inst_count += 1
-        if(_pc_oppcode["pc"+str(_state["pc"])] == "000"): # add
+        if(opcode["pc"+str(_state["pc"])] == "000"):  # add
             print("add")
             print_state()
-            # do your code here 
-
+            regA = get_reg_number(_state["pc"], "A")
+            regB = get_reg_number(_state["pc"], "B")
+            destReg = get_reg_number(_state["pc"], "Dest")
+            _state["reg[ " + str(destReg) + " ]"] = _state["reg[ " + str(regA) + " ]"] + _state["reg[ " + str(regB) + " ]"]
             _state["pc"] += 1
-        elif(_pc_oppcode["pc"+str(_state["pc"])] == "001"): # nand
+        elif(opcode["pc"+str(_state["pc"])] == "001"):  # nand
             print("nand")
             print_state()
-            # do your code here
-            
+            regA = get_reg_number(_state["pc"], "A")
+            regA_value = _state["reg[ " + str(regA) + " ]"]
+            regB = get_reg_number(_state["pc"], "B")
+            regB_value = _state["reg[ " + str(regB) + " ]"]
+            destReg = get_reg_number(_state["pc"], "Dest")
+            _state["reg[ " + str(destReg) + " ]"] = nand(regA_value,regB_value)
             _state["pc"] += 1
-        elif(_pc_oppcode["pc"+str(_state["pc"])] == "010"): # lw
-            print("lw")
+        elif(opcode["pc"+str(_state["pc"])] == "010"):  # lw
             print_state()
-            # do your code here
-           
+            offset = get_offset(_state["pc"])
+            regA = get_reg_number(_state["pc"], "A")
+            regA_value = _state["reg[ " + str(regA) + " ]"]
+            regB = get_reg_number(_state["pc"], "B")
+            _state["reg[ " + str(regB) + " ]"] = _state["mem[ " + str(regA_value + offset) + " ]"]
             _state["pc"] += 1
-        elif(_pc_oppcode["pc"+str(_state["pc"])] == "011"): # sw
-            print("sw")
+        elif(opcode["pc"+str(_state["pc"])] == "011"):  # sw
             print_state()
-            # do your code here
-
+            offset = get_offset(_state["pc"])
+            regA = get_reg_number(_state["pc"], "A")
+            regA_value = _state["reg[ " + str(regA) + " ]"]
+            regB = get_reg_number(_state["pc"], "B")
+            regB_value = _state["reg[ " + str(regB) + " ]"]
+            _state["mem[ " + str(regA_value+offset) + " ]"] = regB_value
             _state["pc"] += 1
-        elif(_pc_oppcode["pc"+str(_state["pc"])] == "100"): # beq
+        elif(opcode["pc"+str(_state["pc"])] == "100"):  # beq
             print("beq")
-            branch = False
-            offset = twos_comp(
-                binary_to_decimal(get_bits(
-                    decimal_to_binary(int(_state["mem[ "+ str(_state["pc"]) +" ]"]),32),16,32)),16)
             print_state()
+            branch = False
+            offset = get_offset(_state["pc"])
             # do your code here
-            print(offset)
             if(branch):
-                _state["pc"] += 1 + offset
+                _state["pc"] += (1 + offset)
             else:
                 _state["pc"] += 1
-        elif(_pc_oppcode["pc"+str(_state["pc"])] == "101"): # jalr
-            print("jalr")
+        elif(opcode["pc"+str(_state["pc"])] == "101"):  # jalr
             print_state()
-            # do your code here
-            
-            # _state["pc"] = regA
-            _state["pc"] += 1 # dummy
-        elif(_pc_oppcode["pc"+str(_state["pc"])] == "110"): # halt
+            regA = get_reg_number(_state["pc"], "A") 
+            regB = get_reg_number(_state["pc"], "B")
+            if(regA == regB):
+                _state["reg[ " + str(regB) + " ]"] = _state["pc"] + 1
+                _state["pc"] += 1
+            else:
+                _state["reg[ " + str(regB) + " ]"] = _state["pc"] + 1
+                _state["pc"] = _state["reg[ " + str(regA) + " ]"]
+        elif(opcode["pc"+str(_state["pc"])] == "110"):  # halt
             print("halt")
             print_state()
-            # do your code here
-            
-            print("machine halted\ntotal of " + str(inst_count) + " instructions executed\nfinal state of machine:\n")
+            print("machine halted\ntotal of " + str(inst_count) +
+                  " instructions executed\nfinal state of machine:\n")
             _state["pc"] += 1
             print_state()
-        elif(_pc_oppcode["pc"+str(_state["pc"])] == "111"): # noop
-            print("noop")
+        elif(opcode["pc"+str(_state["pc"])] == "111"):  # noop
             print_state()
-            # do your code here
-            
-            _state["pc"] += 1 # dummy
+            _state["pc"] += 1
 
 
 try:
     # receive machine argument from command line ex. python Simulation.py machineCode.txt
     inFilePath = sys.argv[1]
-except :
+except:
     print("please insert input file ex. python Simulation.py machineCode.txt")
     exit(1)
 init_MEM_REG()
