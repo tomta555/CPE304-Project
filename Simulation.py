@@ -7,6 +7,10 @@ opcode = {}
 halt_pc = 0
 num_Memory = 0
 
+def writeData(data):  # write data to output.txt
+    f = open("RegMem.txt", "a")
+    f.write(data + "\n")
+    f.close()
 
 def binary_to_decimal(str_val):     # convert binary string to decimal
     """convert binary string to decimal"""
@@ -34,20 +38,46 @@ def decimal_to_binary(val, bits):    # convert decimal int to binary string
 
 def nand(regA, regB):
     """compute nand from value in regA and regB : input is decimal"""
-    max_len = 0
-    len_A = len(format(regA, 'b'))
-    len_B = len(format(regB, 'b'))
-
-    if(len_A >= len_B):
-        max_len = len_A
+    if regA < 0:
+        bi_regA = "{0:b}".format(65536+regA)
     else:
-        max_len = len_B
-    max_value = 0
-    for i in range(max_len - 1, -1, -1):
-        max_value += 1 << i
+        bi_regA = "{0:b}".format(regA)
+    if regB < 0:
+        bi_regB = "{0:b}".format(65536+regB)
+    else:
+        bi_regB = "{0:b}".format(regB)
+    len_A = len(bi_regA)
+    len_B = len(bi_regB)
+    len_add = abs(len_A - len_B)
+    zero_add = ""
+    for i in range(0,len_add,1):
+        zero_add += "0"
+    if len_A < len_B:
+        bi_regA = zero_add + bi_regA
+    elif len_B < len_A:
+        bi_regB = zero_add + bi_regB
+    result_and = ""
 
-    return max_value - (regA & regB)
+    for i in range(0,len(bi_regA),1):
+        if bi_regA[i] == "1" and bi_regB[i] == "1":
+            result_and += "1"
+        else:
+            result_and += "0"
 
+    result = ""
+    for i in range(0,len(result_and),1):
+        if result_and[i] == "0":
+            result += "1"
+        else:
+            result += "0"
+    count = 0
+    for i in range(0,len(result),1):
+        if result[i] == "1":
+            count += 1
+    if count == len(result):
+        return -1
+    else:
+        return twos_comp(int(result,2),16)
 
 def twos_comp(val, bits):
     """compute the 2's complement of int"""
@@ -109,15 +139,22 @@ def init_MEM_REG():
 
 def print_state():
     """Print state and value in each memory and register"""
-    print("@@@\nstate:\n\tpc " + str(_state["pc"])+"\n\tmemory:")
+    print("\n@@@\nstate:\n\tpc " + str(_state["pc"])+"\n\tmemory:")
+    writeData("\n@@@\nstate:\n\tpc " + str(_state["pc"])+"\n\tmemory:")
     for i in range(0, num_Memory, 1):
+        writeData("\t\t" + "mem[ " + str(i) + " ] " +
+              str(_state["mem[ " + str(i) + " ]"]))
         print("\t\t" + "mem[ " + str(i) + " ] " +
               str(_state["mem[ " + str(i) + " ]"]))
+    writeData("\tregisters:")
     print("\tregisters:")
     for i in range(0, 8, 1):
+        writeData("\t\t" + "reg[ " + str(i) + " ] " +
+              str(_state["reg[ " + str(i) + " ]"]))
         print("\t\t" + "reg[ " + str(i) + " ] " +
               str(_state["reg[ " + str(i) + " ]"]))
-    print("end state\n\n")
+    writeData("end state")
+    print("end state")
 
 
 def simulation():
@@ -130,15 +167,14 @@ def simulation():
     while (_state["pc"] != halt_pc):
         inst_count += 1
         if(opcode["pc"+str(_state["pc"])] == "000"):  # add
-            print("add")
             print_state()
             regA = get_reg_number(_state["pc"], "A")
             regB = get_reg_number(_state["pc"], "B")
             destReg = get_reg_number(_state["pc"], "Dest")
-            _state["reg[ " + str(destReg) + " ]"] = _state["reg[ " + str(regA) + " ]"] + _state["reg[ " + str(regB) + " ]"]
+            result = _state["reg[ " + str(regA) + " ]"] + _state["reg[ " + str(regB) + " ]"]
+            _state["reg[ " + str(destReg) + " ]"] = result
             _state["pc"] += 1
         elif(opcode["pc"+str(_state["pc"])] == "001"):  # nand
-            print("nand")
             print_state()
             regA = get_reg_number(_state["pc"], "A")
             regA_value = _state["reg[ " + str(regA) + " ]"]
@@ -165,9 +201,7 @@ def simulation():
             _state["mem[ " + str(regA_value+offset) + " ]"] = regB_value
             _state["pc"] += 1
         elif(opcode["pc"+str(_state["pc"])] == "100"):  # beq
-            print("beq")
             print_state()
-            branch = False
             offset = get_offset(_state["pc"])
             regA = get_reg_number(_state["pc"], "A") 
             regB = get_reg_number(_state["pc"], "B")
@@ -186,8 +220,8 @@ def simulation():
                 _state["reg[ " + str(regB) + " ]"] = _state["pc"] + 1
                 _state["pc"] = _state["reg[ " + str(regA) + " ]"]
         elif(opcode["pc"+str(_state["pc"])] == "110"):  # halt
-            print("halt")
             print_state()
+            writeData("machine halted\ntotal of " + str(inst_count) + " instructions executed\nfinal state of machine:\n")
             print("machine halted\ntotal of " + str(inst_count) +
                   " instructions executed\nfinal state of machine:\n")
             _state["pc"] += 1

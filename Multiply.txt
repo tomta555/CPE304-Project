@@ -1,0 +1,21 @@
+    lw    0    2    mcand    set x = mcand
+    lw    0    3    mplier    set y = mplier
+    lw    0    1    zero    set reg[ 1 ] = 0 = ans    
+    lw    0    4    one    set mark = 1
+    lw    0    5    negone    set reg[ 5 ] = -1
+    lw    0    7    end    set end of program
+next    nand    2    4    6    nand(x,mark)
+    nand    6    5    6    nand(-1,nand(x,mark))
+    beq    0    6    skip    if (nand(-1,nand(x,mark)) == 0) jump to skip (not add) , -1 is all bits = 1
+    add    1    3    1    ans = ans + y
+skip    add    3    3    3    y = y + y
+    add    4    4    4    mark = mark + mark
+    beq    7    4    done    if (mark == 0) jump to done
+    beq    0    0    next    jump to next (loop)
+done    halt    
+mcand    .fill    32766
+mplier    .fill    10383
+end    .fill    32768
+one    .fill    1
+negone    .fill    -1
+zero    .fill    0
