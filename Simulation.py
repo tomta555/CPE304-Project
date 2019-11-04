@@ -169,8 +169,9 @@ def simulation():
             print_state()
             branch = False
             offset = get_offset(_state["pc"])
-            # do your code here
-            if(branch):
+            regA = get_reg_number(_state["pc"], "A") 
+            regB = get_reg_number(_state["pc"], "B")
+            if(_state["reg[ " + str(regA) + " ]"] == _state["reg[ " + str(regB) + " ]"]):
                 _state["pc"] += (1 + offset)
             else:
                 _state["pc"] += 1
