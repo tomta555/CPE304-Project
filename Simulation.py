@@ -41,11 +41,11 @@ def nand(regA, regB):
     if regA < 0:
         bi_regA = "{0:b}".format(65536+regA)
     else:
-        bi_regA = "{0:b}".format(regA)
+        bi_regA = "{0:016b}".format(regA)
     if regB < 0:
         bi_regB = "{0:b}".format(65536+regB)
     else:
-        bi_regB = "{0:b}".format(regB)
+        bi_regB = "{0:016b}".format(regB)
     len_A = len(bi_regA)
     len_B = len(bi_regB)
     len_add = abs(len_A - len_B)
@@ -235,7 +235,11 @@ try:
     # receive machine argument from command line ex. python Simulation.py machineCode.txt
     inFilePath = sys.argv[1]
 except:
-    print("please insert input file ex. python Simulation.py machineCode.txt")
+    print("Error: Code=exit(1) please insert input file ex. python Simulation.py machineCode.txt")
     exit(1)
-init_MEM_REG()
+try:
+    init_MEM_REG()
+except ValueError:
+    print("Error:  Code=exit(1) input file is not machine code")
+    exit(1)
 simulation()
