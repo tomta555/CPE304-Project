@@ -1,6 +1,5 @@
     lw    0    2    mcand    set x = mcand
     lw    0    3    mplier    set y = mplier
-    lw    0    1    zero    set reg[ 1 ] = 0 = ans    
     lw    0    4    one    set mark = 1
     lw    0    5    negone    set reg[ 5 ] = -1
     lw    0    7    end    set end of program
@@ -13,9 +12,8 @@ skip    add    3    3    3    y = y + y
     beq    7    4    done    if (mark == 0) jump to done
     beq    0    0    next    jump to next (loop)
 done    halt    
-mcand    .fill    32766
+mcand    .fill    32766 
 mplier    .fill    10383
-end    .fill    32768
+end    .fill    65536
 one    .fill    1
 negone    .fill    -1
-zero    .fill    0

@@ -48,16 +48,7 @@ def nand(regA, regB):
         bi_regB = "{0:016b}".format(regB)
     len_A = len(bi_regA)
     len_B = len(bi_regB)
-    len_add = abs(len_A - len_B)
-    zero_add = ""
-    for i in range(0,len_add,1):
-        zero_add += "0"
-    if len_A < len_B:
-        bi_regA = zero_add + bi_regA
-    elif len_B < len_A:
-        bi_regB = zero_add + bi_regB
     result_and = ""
-
     for i in range(0,len(bi_regA),1):
         if bi_regA[i] == "1" and bi_regB[i] == "1":
             result_and += "1"
