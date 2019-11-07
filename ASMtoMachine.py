@@ -7,7 +7,7 @@ def map_label():
     inFile = open(inFilePath, 'r')
     lineCount = 0
     for line in inFile:
-        lineSplit = line.split("    ")
+        lineSplit = line.split("    ",5)
         if lineSplit[0] != '':                  # if line have label
             if not lineSplit[0] in _label.keys():
                 _label[lineSplit[0]] = lineCount    # map label with current PC
@@ -89,8 +89,6 @@ def writeData(data):  # write data to output.txt
 
 
 def inFileParse():
-
-    map_label()
     bit31_25 = '0000000'            # Set Unused Bits to 0
     bit21_0 = '0000000000000000000000'
     bit15_3 = '0000000000000'
@@ -100,7 +98,7 @@ def inFileParse():
 
     for line in inFile:             # Read line
         # Split field to Array lineSplit[idx]
-        lineSplit = line.split("    ")
+        lineSplit = line.split("    ",5)
         if(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq' or lineSplit[1] == 'add' or lineSplit[1] == 'nand' or lineSplit[1] == 'jalr' or lineSplit[1] == 'halt' or lineSplit[1] == 'noop' or lineSplit[1] == '.fill'):
             if(lineSplit[1] == 'beq'):
                 opcode = '100'
@@ -244,4 +242,5 @@ try:
 except:
     print("Error: Code=exit(1) please insert input file ex. python ASMtoMachine.py in.txt")
     exit(1)
+map_label()
 inFileParse()
