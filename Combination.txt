@@ -1,0 +1,14 @@
+    lw    0    1    n    load n to $1
+    lw    0    2    r    load r to $2
+    beq    0    2    ret1    if(r == 0) return 1
+    beq    1    2    ret1    if(n == r) return 1
+    lw    0    6    combiAddr    $2 = combi
+    jalr    6    7    call combi    
+ret1    lw    0    3    one
+done    halt    end of program
+combi    
+n    .fill    3    n
+r    .fill    3    r
+combiAddr    .fill    combi
+one    .fill    1    
+stack    .fill    0
