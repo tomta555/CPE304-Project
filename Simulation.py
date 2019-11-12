@@ -4,13 +4,14 @@ inFilePath = ''
 _state = {}
 _machine_code = {}
 opcode = {}
-halt_pc = 0
 num_Memory = 0
+
 
 def writeData(data):  # write data to output.txt
     f = open("RegMem.txt", "a")
     f.write(data + "\n")
     f.close()
+
 
 def binary_to_decimal(str_val):     # convert binary string to decimal
     """convert binary string to decimal"""
@@ -49,26 +50,27 @@ def nand(regA, regB):
     len_A = len(bi_regA)
     len_B = len(bi_regB)
     result_and = ""
-    for i in range(0,len(bi_regA),1):
+    for i in range(0, len(bi_regA), 1):
         if bi_regA[i] == "1" and bi_regB[i] == "1":
             result_and += "1"
         else:
             result_and += "0"
 
     result = ""
-    for i in range(0,len(result_and),1):
+    for i in range(0, len(result_and), 1):
         if result_and[i] == "0":
             result += "1"
         else:
             result += "0"
     count = 0
-    for i in range(0,len(result),1):
+    for i in range(0, len(result), 1):
         if result[i] == "1":
             count += 1
     if count == len(result):
         return -1
     else:
-        return twos_comp(int(result,2),16)
+        return twos_comp(int(result, 2), 16)
+
 
 def twos_comp(val, bits):
     """compute the 2's complement of int"""
@@ -104,7 +106,6 @@ def init_MEM_REG():
     inFile = open(inFilePath, 'r')
     i = 0
     lineCount = 0
-    halt_passed = False
     _state["pc"] = 0
 
     while (i < 8):
@@ -114,13 +115,8 @@ def init_MEM_REG():
     for line in inFile:
         _state["mem[ " + str(lineCount) + " ]"] = int(line.replace('\n', ''))
         _machine_code["line" + str(lineCount)] = int(line.replace('\n', ''))
-        if not halt_passed:
-            opcode["pc" + str(lineCount)] = get_bits(
-                decimal_to_binary(int(line.replace('\n', '')), 32), 7, 10)
-        if(line.replace('\n', '') == "25165824"):
-            global halt_pc
-            halt_pc = lineCount + 1
-            halt_passed = True
+        opcode["pc" + str(lineCount)] = get_bits(
+            decimal_to_binary(int(line.replace('\n', '')), 32), 7, 10)
         lineCount += 1
     global num_Memory
     num_Memory = lineCount
@@ -134,14 +130,14 @@ def print_state():
     writeData("\n@@@\nstate:\n\tpc " + str(_state["pc"])+"\n\tmemory:")
     for i in range(0, num_Memory, 1):
         writeData("\t\t" + "mem[ " + str(i) + " ] " +
-              str(_state["mem[ " + str(i) + " ]"]))
+                  str(_state["mem[ " + str(i) + " ]"]))
         print("\t\t" + "mem[ " + str(i) + " ] " +
               str(_state["mem[ " + str(i) + " ]"]))
     writeData("\tregisters:")
     print("\tregisters:")
     for i in range(0, 8, 1):
         writeData("\t\t" + "reg[ " + str(i) + " ] " +
-              str(_state["reg[ " + str(i) + " ]"]))
+                  str(_state["reg[ " + str(i) + " ]"]))
         print("\t\t" + "reg[ " + str(i) + " ] " +
               str(_state["reg[ " + str(i) + " ]"]))
     writeData("end state")
@@ -150,19 +146,16 @@ def print_state():
 
 def simulation():
     """Simulation each instruction behavior"""
-    # เรียกใช้ pc ด้วย _state["pc"]
-    # เรียกใช้ memory ด้วย _state["mem[ " + index + " ]"]  -> index ตั้งแต่ 0 ถึง num_Memory
-    # เรียกใช้ register ด้วย _state["reg[ " + index + " ]"] -> index ตั้งแต่ 0 ถึง 7
-
     inst_count = 0
-    while (_state["pc"] != halt_pc):
+    while (True):
         inst_count += 1
         if(opcode["pc"+str(_state["pc"])] == "000"):  # add
             print_state()
             regA = get_reg_number(_state["pc"], "A")
             regB = get_reg_number(_state["pc"], "B")
             destReg = get_reg_number(_state["pc"], "Dest")
-            result = _state["reg[ " + str(regA) + " ]"] + _state["reg[ " + str(regB) + " ]"]
+            result = _state["reg[ " + str(regA) + " ]"] + \
+                _state["reg[ " + str(regB) + " ]"]
             _state["reg[ " + str(destReg) + " ]"] = result
             _state["pc"] += 1
         elif(opcode["pc"+str(_state["pc"])] == "001"):  # nand
@@ -172,7 +165,8 @@ def simulation():
             regB = get_reg_number(_state["pc"], "B")
             regB_value = _state["reg[ " + str(regB) + " ]"]
             destReg = get_reg_number(_state["pc"], "Dest")
-            _state["reg[ " + str(destReg) + " ]"] = nand(regA_value,regB_value)
+            _state["reg[ " + str(destReg) +
+                   " ]"] = nand(regA_value, regB_value)
             _state["pc"] += 1
         elif(opcode["pc"+str(_state["pc"])] == "010"):  # lw
             print_state()
@@ -180,7 +174,8 @@ def simulation():
             regA = get_reg_number(_state["pc"], "A")
             regA_value = _state["reg[ " + str(regA) + " ]"]
             regB = get_reg_number(_state["pc"], "B")
-            _state["reg[ " + str(regB) + " ]"] = _state["mem[ " + str(regA_value + offset) + " ]"]
+            _state["reg[ " + str(regB) + " ]"] = _state["mem[ " +
+                                                        str(regA_value + offset) + " ]"]
             _state["pc"] += 1
         elif(opcode["pc"+str(_state["pc"])] == "011"):  # sw
             print_state()
@@ -194,7 +189,7 @@ def simulation():
         elif(opcode["pc"+str(_state["pc"])] == "100"):  # beq
             print_state()
             offset = get_offset(_state["pc"])
-            regA = get_reg_number(_state["pc"], "A") 
+            regA = get_reg_number(_state["pc"], "A")
             regB = get_reg_number(_state["pc"], "B")
             if(_state["reg[ " + str(regA) + " ]"] == _state["reg[ " + str(regB) + " ]"]):
                 _state["pc"] += (1 + offset)
@@ -202,7 +197,7 @@ def simulation():
                 _state["pc"] += 1
         elif(opcode["pc"+str(_state["pc"])] == "101"):  # jalr
             print_state()
-            regA = get_reg_number(_state["pc"], "A") 
+            regA = get_reg_number(_state["pc"], "A")
             regB = get_reg_number(_state["pc"], "B")
             if(regA == regB):
                 _state["reg[ " + str(regB) + " ]"] = _state["pc"] + 1
@@ -212,11 +207,13 @@ def simulation():
                 _state["pc"] = _state["reg[ " + str(regA) + " ]"]
         elif(opcode["pc"+str(_state["pc"])] == "110"):  # halt
             print_state()
-            writeData("machine halted\ntotal of " + str(inst_count) + " instructions executed\nfinal state of machine:\n")
+            writeData("machine halted\ntotal of " + str(inst_count) +
+                      " instructions executed\nfinal state of machine:\n")
             print("machine halted\ntotal of " + str(inst_count) +
                   " instructions executed\nfinal state of machine:\n")
             _state["pc"] += 1
             print_state()
+            break
         elif(opcode["pc"+str(_state["pc"])] == "111"):  # noop
             print_state()
             _state["pc"] += 1
