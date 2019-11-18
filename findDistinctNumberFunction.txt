@@ -1,0 +1,28 @@
+    lw    0    1    count    load 1 to reg1
+loop1    add    1    4    4    add 1 to count input1
+    add    0    0    5    clear count input2
+loop2    add    1    5    5    add 1 to count input2
+    lw    5    3    start    load input2 to reg3
+    lw    4    2    start    load input1 to reg2
+    lw    0    7    tail    add length of index 
+    beq    2    7    done    if input1 has changed all go to halt
+    beq    3    7    loop1    if input2 has changed all go to loop1
+    beq    2    3    loop2    if input1 == input2 go to loop2  
+    add    1    6    6     add 1 to reg6 to check difference
+    lw    0    7    miTail     load level to check difference
+    beq    6    7    storeDis     if input1 difference for all index count number of difference 
+    beq    0    0    loop2     go to loop2
+storeDis    lw    0    6    Distinct     load count number of Distinct
+    add    1    6    6        add count number of distinct
+    sw    0    6    Distinct     store count number of distinct
+done    lw    0    6    Distinct    load count number of distinct
+    halt        end of function
+count    .fill    1    for add by 1
+start    .fill    1    
+two    .fill    2        first index (you can insert more index)
+three    .fill    2     
+four    .fill    2    
+five    .fill    3    last index
+tail    .fill    5      length of index+1 for stop search index
+Distinct    .fill    0    count number of index (you can see output of function in reg6)
+miTail    .fill    3    number of matching index - itself
