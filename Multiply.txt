@@ -14,6 +14,6 @@ skip    add    3    3    3    y = y + y
 done    halt    
 mcand    .fill    32766 
 mplier    .fill    10383
-end    .fill    65536
+end    .fill    0
 one    .fill    1
 negone    .fill    -1

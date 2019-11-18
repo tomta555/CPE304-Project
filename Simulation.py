@@ -40,13 +40,13 @@ def decimal_to_binary(val, bits):    # convert decimal int to binary string
 def nand(regA, regB):
     """compute nand from value in regA and regB : input is decimal"""
     if regA < 0:
-        bi_regA = "{0:b}".format(65536+regA)
+        bi_regA = "{0:b}".format(4294967296+regA)
     else:
-        bi_regA = "{0:016b}".format(regA)
+        bi_regA = "{0:032b}".format(regA)
     if regB < 0:
-        bi_regB = "{0:b}".format(65536+regB)
+        bi_regB = "{0:b}".format(4294967296+regB)
     else:
-        bi_regB = "{0:016b}".format(regB)
+        bi_regB = "{0:032b}".format(regB)
     len_A = len(bi_regA)
     len_B = len(bi_regB)
     result_and = ""
@@ -154,8 +154,22 @@ def simulation():
             regA = get_reg_number(_state["pc"], "A")
             regB = get_reg_number(_state["pc"], "B")
             destReg = get_reg_number(_state["pc"], "Dest")
-            result = _state["reg[ " + str(regA) + " ]"] + \
-                _state["reg[ " + str(regB) + " ]"]
+            regA_value = _state["reg[ " + str(regA) + " ]"]
+            regB_value = _state["reg[ " + str(regB) + " ]"]
+            if(regA_value > 4294967296):
+                regA_value -= 4294967296
+            if(regA_value < -4294967296):
+                regA_value += 4294967296
+            if(regB_value > 4294967296):
+                regB_value -= 4294967296
+            if(regB_value < -4294967296):
+                regB_value += 4294967296                
+            if(regA_value == 4294967296 or regA_value == -4294967296):
+                result = -regA_value+regB_value
+            elif(regB_value == 4294967296 or regB_value == -4294967296):
+                result = -regB_value+regA_value
+            else:
+                result = regA_value+regB_value
             _state["reg[ " + str(destReg) + " ]"] = result
             _state["pc"] += 1
         elif(opcode["pc"+str(_state["pc"])] == "001"):  # nand
