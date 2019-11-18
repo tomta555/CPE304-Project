@@ -156,17 +156,17 @@ def simulation():
             destReg = get_reg_number(_state["pc"], "Dest")
             regA_value = _state["reg[ " + str(regA) + " ]"]
             regB_value = _state["reg[ " + str(regB) + " ]"]
-            if(regA_value > 4294967296):
-                regA_value -= 4294967296
-            if(regA_value < -4294967296):
-                regA_value += 4294967296
-            if(regB_value > 4294967296):
-                regB_value -= 4294967296
-            if(regB_value < -4294967296):
-                regB_value += 4294967296                
-            if(regA_value == 4294967296 or regA_value == -4294967296):
+            if(regA_value > 2147483648):
+                regA_value -= 2147483648
+            if(regA_value < -2147483648):
+                regA_value += 2147483648
+            if(regB_value > 2147483648):
+                regB_value -= 2147483648
+            if(regB_value < -2147483648):
+                regB_value += 2147483648                
+            if(regA_value == 2147483648 or regA_value == -2147483648):
                 result = -regA_value+regB_value
-            elif(regB_value == 4294967296 or regB_value == -4294967296):
+            elif(regB_value == 2147483648 or regB_value == -2147483648):
                 result = -regB_value+regA_value
             else:
                 result = regA_value+regB_value
