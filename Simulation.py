@@ -8,7 +8,7 @@ num_Memory = 0
 
 
 def writeData(data):  # write data to output.txt
-    f = open("PrintState", "a")
+    f = open("PrintState.txt", "a")
     f.write(data + "\n")
     f.close()
 

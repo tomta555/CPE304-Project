@@ -83,7 +83,7 @@ def twos_comp(val, bits):
 
 
 def writeData(data):  # write data to output.txt
-    f = open("machineCode", "a")
+    f = open("machineCode.txt", "a")
     f.write(data + "\n")
     f.close()
 
