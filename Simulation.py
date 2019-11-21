@@ -69,7 +69,7 @@ def nand(regA, regB):
     if count == len(result):
         return -1
     else:
-        return twos_comp(int(result, 2), 16)
+        return twos_comp(int(result, 2), 32)
 
 
 def twos_comp(val, bits):

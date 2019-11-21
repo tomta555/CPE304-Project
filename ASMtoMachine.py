@@ -232,7 +232,7 @@ def inFileParse():
         writeData(str(machineCode))  # write machine code to output.txt
         pc += 1
     inFile.close()
-    print("Code=exit(0) Program run successfuly")
+    print("Code=exit(0) Program run successfully")
     exit(0)
 
 
