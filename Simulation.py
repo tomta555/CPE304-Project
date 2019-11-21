@@ -147,90 +147,94 @@ def print_state():
 def simulation():
     """Simulation each instruction behavior"""
     inst_count = 0
-    while (True):
-        inst_count += 1
-        if(opcode["pc"+str(_state["pc"])] == "000"):  # add
-            print_state()
-            regA = get_reg_number(_state["pc"], "A")
-            regB = get_reg_number(_state["pc"], "B")
-            destReg = get_reg_number(_state["pc"], "Dest")
-            regA_value = _state["reg[ " + str(regA) + " ]"]
-            regB_value = _state["reg[ " + str(regB) + " ]"]
-            if(regA_value > 2147483648):
-                regA_value -= 2147483648
-            if(regA_value < -2147483648):
-                regA_value += 2147483648
-            if(regB_value > 2147483648):
-                regB_value -= 2147483648
-            if(regB_value < -2147483648):
-                regB_value += 2147483648                
-            if(regA_value == 2147483648 or regA_value == -2147483648):
-                result = -regA_value+regB_value
-            elif(regB_value == 2147483648 or regB_value == -2147483648):
-                result = -regB_value+regA_value
-            else:
-                result = regA_value+regB_value
-            _state["reg[ " + str(destReg) + " ]"] = result
-            _state["pc"] += 1
-        elif(opcode["pc"+str(_state["pc"])] == "001"):  # nand
-            print_state()
-            regA = get_reg_number(_state["pc"], "A")
-            regA_value = _state["reg[ " + str(regA) + " ]"]
-            regB = get_reg_number(_state["pc"], "B")
-            regB_value = _state["reg[ " + str(regB) + " ]"]
-            destReg = get_reg_number(_state["pc"], "Dest")
-            _state["reg[ " + str(destReg) +
-                   " ]"] = nand(regA_value, regB_value)
-            _state["pc"] += 1
-        elif(opcode["pc"+str(_state["pc"])] == "010"):  # lw
-            print_state()
-            offset = get_offset(_state["pc"])
-            regA = get_reg_number(_state["pc"], "A")
-            regA_value = _state["reg[ " + str(regA) + " ]"]
-            regB = get_reg_number(_state["pc"], "B")
-            _state["reg[ " + str(regB) + " ]"] = _state["mem[ " +
-                                                        str(regA_value + offset) + " ]"]
-            _state["pc"] += 1
-        elif(opcode["pc"+str(_state["pc"])] == "011"):  # sw
-            print_state()
-            offset = get_offset(_state["pc"])
-            regA = get_reg_number(_state["pc"], "A")
-            regA_value = _state["reg[ " + str(regA) + " ]"]
-            regB = get_reg_number(_state["pc"], "B")
-            regB_value = _state["reg[ " + str(regB) + " ]"]
-            _state["mem[ " + str(regA_value+offset) + " ]"] = regB_value
-            _state["pc"] += 1
-        elif(opcode["pc"+str(_state["pc"])] == "100"):  # beq
-            print_state()
-            offset = get_offset(_state["pc"])
-            regA = get_reg_number(_state["pc"], "A")
-            regB = get_reg_number(_state["pc"], "B")
-            if(_state["reg[ " + str(regA) + " ]"] == _state["reg[ " + str(regB) + " ]"]):
-                _state["pc"] += (1 + offset)
-            else:
+    try:
+        while (True):
+            inst_count += 1
+            if(opcode["pc"+str(_state["pc"])] == "000"):  # add
+                print_state()
+                regA = get_reg_number(_state["pc"], "A")
+                regB = get_reg_number(_state["pc"], "B")
+                destReg = get_reg_number(_state["pc"], "Dest")
+                regA_value = _state["reg[ " + str(regA) + " ]"]
+                regB_value = _state["reg[ " + str(regB) + " ]"]
+                if(regA_value > 2147483648):
+                    regA_value -= 2147483648
+                if(regA_value < -2147483648):
+                    regA_value += 2147483648
+                if(regB_value > 2147483648):
+                    regB_value -= 2147483648
+                if(regB_value < -2147483648):
+                    regB_value += 2147483648                
+                if(regA_value == 2147483648 or regA_value == -2147483648):
+                    result = -regA_value+regB_value
+                elif(regB_value == 2147483648 or regB_value == -2147483648):
+                    result = -regB_value+regA_value
+                else:
+                    result = regA_value+regB_value
+                _state["reg[ " + str(destReg) + " ]"] = result
                 _state["pc"] += 1
-        elif(opcode["pc"+str(_state["pc"])] == "101"):  # jalr
-            print_state()
-            regA = get_reg_number(_state["pc"], "A")
-            regB = get_reg_number(_state["pc"], "B")
-            if(regA == regB):
-                _state["reg[ " + str(regB) + " ]"] = _state["pc"] + 1
+            elif(opcode["pc"+str(_state["pc"])] == "001"):  # nand
+                print_state()
+                regA = get_reg_number(_state["pc"], "A")
+                regA_value = _state["reg[ " + str(regA) + " ]"]
+                regB = get_reg_number(_state["pc"], "B")
+                regB_value = _state["reg[ " + str(regB) + " ]"]
+                destReg = get_reg_number(_state["pc"], "Dest")
+                _state["reg[ " + str(destReg) +
+                    " ]"] = nand(regA_value, regB_value)
                 _state["pc"] += 1
-            else:
-                _state["reg[ " + str(regB) + " ]"] = _state["pc"] + 1
-                _state["pc"] = _state["reg[ " + str(regA) + " ]"]
-        elif(opcode["pc"+str(_state["pc"])] == "110"):  # halt
-            print_state()
-            writeData("machine halted\ntotal of " + str(inst_count) +
-                      " instructions executed\nfinal state of machine:\n")
-            print("machine halted\ntotal of " + str(inst_count) +
-                  " instructions executed\nfinal state of machine:\n")
-            _state["pc"] += 1
-            print_state()
-            break
-        elif(opcode["pc"+str(_state["pc"])] == "111"):  # noop
-            print_state()
-            _state["pc"] += 1
+            elif(opcode["pc"+str(_state["pc"])] == "010"):  # lw
+                print_state()
+                offset = get_offset(_state["pc"])
+                regA = get_reg_number(_state["pc"], "A")
+                regA_value = _state["reg[ " + str(regA) + " ]"]
+                regB = get_reg_number(_state["pc"], "B")
+                _state["reg[ " + str(regB) + " ]"] = _state["mem[ " +
+                                                            str(regA_value + offset) + " ]"]
+                _state["pc"] += 1
+            elif(opcode["pc"+str(_state["pc"])] == "011"):  # sw
+                print_state()
+                offset = get_offset(_state["pc"])
+                regA = get_reg_number(_state["pc"], "A")
+                regA_value = _state["reg[ " + str(regA) + " ]"]
+                regB = get_reg_number(_state["pc"], "B")
+                regB_value = _state["reg[ " + str(regB) + " ]"]
+                _state["mem[ " + str(regA_value+offset) + " ]"] = regB_value
+                _state["pc"] += 1
+            elif(opcode["pc"+str(_state["pc"])] == "100"):  # beq
+                print_state()
+                offset = get_offset(_state["pc"])
+                regA = get_reg_number(_state["pc"], "A")
+                regB = get_reg_number(_state["pc"], "B")
+                if(_state["reg[ " + str(regA) + " ]"] == _state["reg[ " + str(regB) + " ]"]):
+                    _state["pc"] += (1 + offset)
+                else:
+                    _state["pc"] += 1
+            elif(opcode["pc"+str(_state["pc"])] == "101"):  # jalr
+                print_state()
+                regA = get_reg_number(_state["pc"], "A")
+                regB = get_reg_number(_state["pc"], "B")
+                if(regA == regB):
+                    _state["reg[ " + str(regB) + " ]"] = _state["pc"] + 1
+                    _state["pc"] += 1
+                else:
+                    _state["reg[ " + str(regB) + " ]"] = _state["pc"] + 1
+                    _state["pc"] = _state["reg[ " + str(regA) + " ]"]
+            elif(opcode["pc"+str(_state["pc"])] == "110"):  # halt
+                print_state()
+                writeData("machine halted\ntotal of " + str(inst_count) +
+                        " instructions executed\nfinal state of machine:\n")
+                print("machine halted\ntotal of " + str(inst_count) +
+                    " instructions executed\nfinal state of machine:\n")
+                _state["pc"] += 1
+                print_state()
+                break
+            elif(opcode["pc"+str(_state["pc"])] == "111"):  # noop
+                print_state()
+                _state["pc"] += 1
+    except KeyError:
+        print("Error: Code=exit(1) Branch or Jump to non-exists line")
+        exit(1)
 
 
 try:
