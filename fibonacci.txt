@@ -1,0 +1,35 @@
+    lw    0    1    n    load n to $1
+    lw    0    5    stackAddr    load stackAddress to $5 // $5 = stack starting pointer 
+    lw    0    4    fiboAddr    $4 = fiboAddress
+    lw    0    2    n     load n to $2 
+    jalr    4    7    call fibo        
+    halt     end of program        
+fibo    beq    0    2    ret    if $2 = 0 call return
+    lw    0    6    one    $6 == 1
+    beq    2    6    ret    if $2 == 1 call return
+    add    5    6    5    stackpointer + 1 
+    sw    5    7    stack    store returnAddres in stackpointer
+    add    5    6    5    stackpointer + 1 
+    sw    5    2    stack    store $2 in stackpointer    
+    lw    0    6    neg1    $6 = -1
+    add    2    6    2    $6 -= 1
+    jalr    4    7    call fibo(n-1)    
+    lw    5    3    stack    load stackpointer to $3
+    sw    5    2    stack    store $2 in stackpointer 
+    lw    0    6    neg2     $6 = -2
+    add    3    6    2      $2 = $3 - 2
+    jalr    4    7    call fibo(n-2)
+    lw    5    3    stack    load $3 from stackpointer
+    add    2    3    2     fibo(n-1)+fibo(n-2)     
+    lw    0    6    neg1    $6 = -1
+    add    5    6    5    stackpointer -1
+    lw    5    7    stack load returnAddres from stackpointer          
+    add    5    6    5     stackpointer -1
+ret    jalr    7    6     go to returnAddres
+fiboAddr    .fill    fibo    
+n    .fill    6                  
+one    .fill    1    
+neg1    .fill    -1     
+neg2    .fill    -2      
+stackAddr    .fill    stack      
+stack    .fill    0        
