@@ -7,7 +7,7 @@ opcode = {}
 num_Memory = 0
 
 
-def writeData(data):  # write data to output.txt
+def writeData(data):  # write data to output file
     f = open("PrintState.txt", "a")
     f.write(data + "\n")
     f.close()
@@ -159,6 +159,7 @@ def simulation():
                     result = -regB_value+regA_value
                 else:
                     result = regA_value+regB_value
+                # destReg_value = regA_value + regB_value
                 _state["reg[ " + str(destReg) + " ]"] = result
                 _state["pc"] += 1
             elif(opcode["pc"+str(_state["pc"])] == "001"):  # nand
@@ -168,6 +169,7 @@ def simulation():
                 regB = get_reg_number(_state["pc"], "B")
                 regB_value = _state["reg[ " + str(regB) + " ]"]
                 destReg = get_reg_number(_state["pc"], "Dest")
+                # destReg_value = ~(regA_value & regB_value)
                 _state["reg[ " + str(destReg) +
                     " ]"] = nand(regA_value, regB_value)
                 _state["pc"] += 1
@@ -177,6 +179,7 @@ def simulation():
                 regA = get_reg_number(_state["pc"], "A")
                 regA_value = _state["reg[ " + str(regA) + " ]"]
                 regB = get_reg_number(_state["pc"], "B")
+                # regB_value = mem[regA_value + offset]
                 _state["reg[ " + str(regB) + " ]"] = _state["mem[ " +
                                                             str(regA_value + offset) + " ]"]
                 _state["pc"] += 1
@@ -187,6 +190,7 @@ def simulation():
                 regA_value = _state["reg[ " + str(regA) + " ]"]
                 regB = get_reg_number(_state["pc"], "B")
                 regB_value = _state["reg[ " + str(regB) + " ]"]
+                # mem[regA_value + offset] = regB_value
                 _state["mem[ " + str(regA_value+offset) + " ]"] = regB_value
                 _state["pc"] += 1
             elif(opcode["pc"+str(_state["pc"])] == "100"):  # beq
@@ -194,6 +198,7 @@ def simulation():
                 offset = get_offset(_state["pc"])
                 regA = get_reg_number(_state["pc"], "A")
                 regB = get_reg_number(_state["pc"], "B")
+                # if regA_value = regB_value then Branch to pc + 1 + offset
                 if(_state["reg[ " + str(regA) + " ]"] == _state["reg[ " + str(regB) + " ]"]):
                     _state["pc"] += (1 + offset)
                 else:
@@ -202,9 +207,11 @@ def simulation():
                 print_state()
                 regA = get_reg_number(_state["pc"], "A")
                 regB = get_reg_number(_state["pc"], "B")
+                # if regA and regB is the same register then store pc + 1 to that reg and jump to pc + 1
                 if(regA == regB):
                     _state["reg[ " + str(regB) + " ]"] = _state["pc"] + 1
                     _state["pc"] += 1
+                # if regA and regB is not the same register then store pc + 1 to regB and jump to regA_value line  
                 else:
                     _state["reg[ " + str(regB) + " ]"] = _state["pc"] + 1
                     _state["pc"] = _state["reg[ " + str(regA) + " ]"]

@@ -11,7 +11,7 @@ def map_label():
         if lineSplit[0] != '': # if line have label
             if(not is_number(lineSplit[0])):
                 if not lineSplit[0] in _label.keys():
-                    _label[lineSplit[0]] = lineCount   # map label with current line numbers
+                    _label[lineSplit[0]] = lineCount   # map label with current line number
                 else:
                     print("Error: Code=exit(1) Duplicate label")
                     exit(1)
@@ -105,30 +105,33 @@ def inFileParse():
         if(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq' or lineSplit[1] == 'add' or lineSplit[1] == 'nand' or lineSplit[1] == 'jalr' or lineSplit[1] == 'halt' or lineSplit[1] == 'noop' or lineSplit[1] == '.fill'):
             if(lineSplit[1] == 'beq'):
                 opcode = '100'
-                # Check if field is Number
+                # Check if regA is Number and is between 0 - 7
                 if is_number(lineSplit[2]):
                     if is_number_in_range(lineSplit[2], "reg"):
                         field0 = decimal_to_binary(int(lineSplit[2]), 3)
                 else:
                     print("Error: Code=exit(1) Register is not a number")
                     exit(1)
+                # Check if regB is Number and is between 0 - 7
                 if is_number(lineSplit[3]):
                     if is_number_in_range(lineSplit[3], "reg"):
                         field1 = decimal_to_binary(int(lineSplit[3]), 3)
                 else:
                     print("Error: Code=exit(1) Register is not a number")
                     exit(1)
+                # Check if offset field is number and is between -32768 - 32767
                 if is_number(lineSplit[4]):
                     if is_number_in_range(lineSplit[4], "offset"):
                         field2 = decimal_to_binary(int(lineSplit[4]), 16)
                 else:
+                # Check if label is define
                     if is_label_defined(lineSplit[4]):
+                        # branch forward
                         if int(_label[lineSplit[4]]) >= pc:
-                            field2 = decimal_to_binary(
-                                int(_label[lineSplit[4]] - pc - 1), 16)
-                        else:                # If branch backward use 2's complement
-                            field2 = int(
-                                twos_comp(int(pc - _label[lineSplit[4]] + 1), 16))
+                            field2 = decimal_to_binary(int(_label[lineSplit[4]] - pc - 1), 16)
+                        # If branch backward use 2's complement
+                        else:                
+                            field2 = int(twos_comp(int(pc - _label[lineSplit[4]] + 1), 16))
                             field2 = decimal_to_binary(field2, 16)
 
             elif(lineSplit[1] == 'lw' or lineSplit[1] == 'sw'):
@@ -136,45 +139,49 @@ def inFileParse():
                     opcode = '010'
                 elif(lineSplit[1] == 'sw'):
                     opcode = '011'
-
+                # Check if regA is Number and is between 0 - 7
                 if is_number(lineSplit[2]):
                     if is_number_in_range(lineSplit[2], "reg"):
                         field0 = decimal_to_binary(int(lineSplit[2]), 3)
                 else:
                     print("Error: Code=exit(1) Register is not a number")
                     exit(1)
+                # Check if regB is Number and is between 0 - 7
                 if is_number(lineSplit[3]):
                     if is_number_in_range(lineSplit[3], "reg"):
                         field1 = decimal_to_binary(int(lineSplit[3]), 3)
                 else:
                     print("Error: Code=exit(1) Register is not a number")
                     exit(1)
+                # Check if offset field is number and is between -32768 - 32767
                 if is_number(lineSplit[4]):
                     if is_number_in_range(lineSplit[4], "offset"):
                         field2 = decimal_to_binary(int(lineSplit[4]), 16)
                 else:
+                # Check if label is define
                     if is_label_defined(lineSplit[4]):
-                        field2 = decimal_to_binary(
-                            int(_label[lineSplit[4]]), 16)
+                        field2 = decimal_to_binary(int(_label[lineSplit[4]]), 16)
 
             elif(lineSplit[1] == 'add' or lineSplit[1] == 'nand'):
                 if(lineSplit[1] == 'add'):
                     opcode = '000'
                 elif(lineSplit[1] == 'nand'):
                     opcode = '001'
-
+                # Check if regA is Number and is between 0 - 7
                 if is_number(lineSplit[2]):
                     if is_number_in_range(lineSplit[2], "reg"):
                         field0 = decimal_to_binary(int(lineSplit[2]), 3)
                 else:
                     print("Error: Code=exit(1) Register is not a number")
                     exit(1)
+                # Check if regB is Number and is between 0 - 7
                 if is_number(lineSplit[3]):
                     if is_number_in_range(lineSplit[3], "reg"):
                         field1 = decimal_to_binary(int(lineSplit[3]), 3)
                 else:
                     print("Error: Code=exit(1) Register is not a number")
                     exit(1)
+                # Check if destReg is Number and is between 0 - 7
                 if is_number(lineSplit[4]):
                     if is_number_in_range(lineSplit[4], "reg"):
                         field2 = decimal_to_binary(int(lineSplit[4]), 3)
@@ -184,12 +191,14 @@ def inFileParse():
 
             elif(lineSplit[1] == 'jalr'):
                 opcode = '101'
+                # Check if regA is Number and is between 0 - 7
                 if is_number(lineSplit[2]):
                     if is_number_in_range(lineSplit[2], "reg"):
                         field0 = decimal_to_binary(int(lineSplit[2]), 3)
                 else:
                     print("Error: Code=exit(1) Register is not a number")
                     exit(1)
+                # Check if regB is Number and is between 0 - 7
                 if is_number(lineSplit[3]):
                     if is_number_in_range(lineSplit[3], "reg"):
                         field1 = decimal_to_binary(int(lineSplit[3]), 3)
@@ -204,16 +213,18 @@ def inFileParse():
                     opcode = '111'
 
             elif(lineSplit[1] == '.fill'):
+                # if .fill with number
                 opcode = lineSplit[2].replace('\n', '')
                 if is_number(lineSplit[2]):
                     pass
                 else:
+                # if .fill with label convert label to line number
                     if is_label_defined(opcode):
                         opcode = _label[opcode]
         else:
             print("Error : Code=exit(1) Undifined instruction")
             exit(1)
-
+        # write machine code line to output file
         if(lineSplit[1] == 'add' or lineSplit[1] == 'nand'):
             machineCode = binary_to_decimal(
                 bit31_25 + opcode + field0 + field1 + bit15_3 + field2)
@@ -228,7 +239,7 @@ def inFileParse():
         elif(lineSplit[1] == '.fill'):
             machineCode = int(opcode)
         print(machineCode)
-        writeData(str(machineCode))  # write machine code to output file
+        writeData(str(machineCode))
         pc += 1
 
     inFile.close()
