@@ -23,7 +23,7 @@ fibo    beq    0    2    ret    if $2 = 0 call return
     add    2    3    2     fibo(n-1)+fibo(n-2)     
     lw    0    6    neg1    $6 = -1
     add    5    6    5    stackpointer -1
-    lw    5    7    stack load returnAddres from stackpointer          
+    lw    5    7    stack     load returnAddres from stackpointer          
     add    5    6    5     stackpointer -1
 ret    jalr    7    6     go to returnAddres
 fiboAddr    .fill    fibo    

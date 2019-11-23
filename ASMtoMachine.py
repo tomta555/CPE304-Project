@@ -8,11 +8,15 @@ def map_label():
     lineCount = 0
     for line in inFile:
         lineSplit = line.split("    ",5)
-        if lineSplit[0] != '':                  # if line have label
-            if not lineSplit[0] in _label.keys():
-                _label[lineSplit[0]] = lineCount    # map label with current PC
+        if lineSplit[0] != '': # if line have label
+            if(not is_number(lineSplit[0])):
+                if not lineSplit[0] in _label.keys():
+                    _label[lineSplit[0]] = lineCount   # map label with current line numbers
+                else:
+                    print("Error: Code=exit(1) Duplicate label")
+                    exit(1)
             else:
-                print("Error: Code=exit(1) Duplicate label")
+                print("Error: Code=exit(1) Label is number")
                 exit(1)
         lineCount += 1
     inFile.close()
@@ -77,12 +81,12 @@ def is_label_defined(key):
 
 
 def twos_comp(val, bits):
-    """compute the 2's complement of int for negative decimal to binary bits"""
+    """compute the 2's complement of int for I-Type instruction"""
     val = val - (1 << bits)         # compute negative value
-    return -val                     # return positive value
+    return -val                     
 
 
-def writeData(data):  # write data to output.txt
+def writeData(data):  # write data to machineCode.txt
     f = open("machineCode.txt", "a")
     f.write(data + "\n")
     f.close()
@@ -93,11 +97,10 @@ def inFileParse():
     bit21_0 = '0000000000000000000000'
     bit15_3 = '0000000000000'
     bit15_0 = '0000000000000000'
-    pc = 0                          # Initial PC = 0
+    pc = 0                          # Init PC = 0
     inFile = open(inFilePath, 'r')  # Open file for Read ('r')
 
     for line in inFile:             # Read line
-        # Split field to Array lineSplit[idx]
         lineSplit = line.split("    ",5)
         if(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq' or lineSplit[1] == 'add' or lineSplit[1] == 'nand' or lineSplit[1] == 'jalr' or lineSplit[1] == 'halt' or lineSplit[1] == 'noop' or lineSplit[1] == '.fill'):
             if(lineSplit[1] == 'beq'):
@@ -123,7 +126,7 @@ def inFileParse():
                         if int(_label[lineSplit[4]]) >= pc:
                             field2 = decimal_to_binary(
                                 int(_label[lineSplit[4]] - pc - 1), 16)
-                        else:                                                # If branch backward use 2's complement
+                        else:                # If branch backward use 2's complement
                             field2 = int(
                                 twos_comp(int(pc - _label[lineSplit[4]] + 1), 16))
                             field2 = decimal_to_binary(field2, 16)
@@ -214,23 +217,20 @@ def inFileParse():
         if(lineSplit[1] == 'add' or lineSplit[1] == 'nand'):
             machineCode = binary_to_decimal(
                 bit31_25 + opcode + field0 + field1 + bit15_3 + field2)
-            print(machineCode)
         elif(lineSplit[1] == 'lw' or lineSplit[1] == 'sw' or lineSplit[1] == 'beq'):
             machineCode = binary_to_decimal(
                 bit31_25 + opcode + field0 + field1 + field2)
-            print(machineCode)
         elif(lineSplit[1] == 'jalr'):
             machineCode = binary_to_decimal(
                 bit31_25 + opcode + field0 + field1 + bit15_0)
-            print(machineCode)
         elif(lineSplit[1] == 'halt' or lineSplit[1] == 'noop'):
             machineCode = binary_to_decimal(bit31_25 + opcode + bit21_0)
-            print(machineCode)
         elif(lineSplit[1] == '.fill'):
             machineCode = int(opcode)
-            print(machineCode)
-        writeData(str(machineCode))  # write machine code to output.txt
+        print(machineCode)
+        writeData(str(machineCode))  # write machine code to output file
         pc += 1
+
     inFile.close()
     print("Code=exit(0) Program run successfully")
     exit(0)
